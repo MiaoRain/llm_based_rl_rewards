@@ -108,8 +108,15 @@ class MergeEnv(AbstractEnv):
             # Adjust these weights to change the reward shapping
             # Reward = self.combined_reward(0.8,0.2,llm_reward,dqn_reward,False)
             llm_rewards_mean = sum(rewards) / len(rewards)
-
-        reward = self.config["COLLISION_REWARD"] * (-1 * vehicle.crashed) \
+            reward = self.config["COLLISION_REWARD"] * (-1 * vehicle.crashed) \
+                     + (self.config["HIGH_SPEED_REWARD"] * np.clip(scaled_speed, 0, 1)) \
+                     + self.config["MERGING_LANE_COST"] * Merging_lane_cost \
+                     + self.config["HEADWAY_COST"] * (Headway_cost if Headway_cost < 0 else 0)\
+                    + 0.2 * llm_reward #add llm reward
+            # print("reward:",reward)
+            return reward
+        else:
+            reward = self.config["COLLISION_REWARD"] * (-1 * vehicle.crashed) \
                  + (self.config["HIGH_SPEED_REWARD"] * np.clip(scaled_speed, 0, 1)) \
                  + self.config["MERGING_LANE_COST"] * Merging_lane_cost \
                  + self.config["HEADWAY_COST"] * (Headway_cost if Headway_cost < 0 else 0)
